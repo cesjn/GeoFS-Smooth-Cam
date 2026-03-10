@@ -6,11 +6,15 @@ A high-fidelity camera modification for  [GeoFS](https://www.geo-fs.com/)  desig
 
 ## Key Features
 
-See it in action in [this video](https://www.youtube.com/watch?v=3GqDLJbesvQ).
+
 - **Smooth camera movement**
   - Smooths camera movement for the ultimate GeoFS experience
 - **Integrated settings**
   - Settings are integrated with the GeoFS UI.
+
+See it in action in [this video](https://www.youtube.com/watch?v=3GqDLJbesvQ).
+
+[![Video Thumbnail Alt Text](https://img.youtube.com/vi/3GqDLJbesvQ/0.jpg)](https://www.youtube.com/watch?v=3GqDLJbesvQ)
 
 
 ----------
