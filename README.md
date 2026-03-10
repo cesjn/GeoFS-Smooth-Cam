@@ -56,6 +56,9 @@ Once installed, open the  **GeoFS Preferences**  menu and navigate to the  **Gra
 >
 > **Lower values**  in the manual "Advanced Tweaks" sliders result in  **smoother**  motion, while  **higher values**make the camera more responsive.
 
+<img width="1512" height="945" alt="image" src="https://github.com/user-attachments/assets/9a8e4082-050a-451b-b5f9-a348954ee09e" />
+
+
 ----------
 
 ## Credits
