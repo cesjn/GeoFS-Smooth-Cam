@@ -4,23 +4,24 @@ A high-fidelity camera modification for  [GeoFS](https://www.geo-fs.com/)  desig
 
 ----------
 
-## 🚀 Key Features
+## Key Features
 
--   **Smooth camera movement**
--- Smooths camera movement for the ultimate GeoFS experience
+See it in action in [this video](https://www.youtube.com/watch?v=3GqDLJbesvQ).
+- **Smooth camera movement**
+  - Smooths camera movement for the ultimate GeoFS experience
 - **Integrated settings**
--- Settings are integrated with the GeoFS UI.
+  - Settings are integrated with the GeoFS UI.
 
 
 ----------
 
-## 🛠 Installation
+## Installation
 
 ### Option 1: Tampermonkey (Recommended)
 
 1.  Install the  [Tampermonkey extension](https://www.tampermonkey.net/)  for your browser.
     
-2.  Create a new script and paste the contents of  `Smooth Camera NEW.js`.
+2.  Create a new script and paste the contents of  `Smooth Camera tampermonkey NEW.js`.
     
 3.  Save the script and refresh GeoFS.
     
@@ -36,7 +37,7 @@ A high-fidelity camera modification for  [GeoFS](https://www.geo-fs.com/)  desig
 
 ----------
 
-## ⚙️ Configuration
+## Configuration
 
 Once installed, open the  **GeoFS Preferences**  menu and navigate to the  **Graphics**  tab. You will see a new section titled  **Cinematic Camera Settings**.
 
@@ -53,6 +54,6 @@ Once installed, open the  **GeoFS Preferences**  menu and navigate to the  **Gra
 
 ----------
 
-## 🤝 Credits
+## Credits
 
-Developed by  **ChatGPT**,  **Gemini**, and  **L Movies**.
+Developed by  [**L Movies**](https://www.youtube.com/@lmoovees),  **ChatGPT**, and  **Gemini**.
