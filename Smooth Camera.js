@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         GeoFS Smooth Cinematic Camera
 // @namespace    http://tampermonkey.net/
-// @version      1.3
-// @description  Adds a cinematic smooth camera to GeoFS
+// @version      1.4
+// @description  Adds a cinematic smooth camera to GeoFS with non-refreshing reset
 // @author       ChatGPT, Gemini, and L Movies
 // @match        https://www.geo-fs.com/geofs.php*
 // @match        https://*.geo-fs.com/geofs.php*
@@ -34,7 +34,6 @@
 
     let settings = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { ...defaultSettings };
 
-    // Ensure all settings keys exist (handles updates from older versions)
     Object.keys(defaultSettings).forEach(key => {
         if (typeof settings[key] === 'undefined') settings[key] = defaultSettings[key];
     });
@@ -52,8 +51,8 @@
         injectUI();
     }
 
-    // ==============================
-    // 🎨 UI INJECTION
+   // ==============================
+    // 🎨 UI INJECTION (GEOfS NATIVE)
     // ==============================
     function injectUI() {
         const prefList = document.querySelector('.geofs-preference-list');
@@ -68,124 +67,145 @@
         const container = graphicsLi.querySelector('.geofs-collapsible');
         if (!container || document.getElementById('geofs-smooth-cam-settings')) return;
 
-        const fieldset = document.createElement('fieldset');
-        fieldset.id = 'geofs-smooth-cam-settings';
-        fieldset.style = "color: #000 !important; border: 1px solid #ccc; padding: 10px; margin-top: 10px;";
-        fieldset.innerHTML = `
-            <legend style="color: #000; font-weight: bold;">Cinematic Camera Settings</legend>
-            <div style="padding: 10px 5px; color: #000;">
+        // Visual helper to move sliders to specific values
+        const updateSliderVisuals = (id, val) => {
+            const wrap = document.getElementById(`wrapper-${id}`);
+            if (wrap) {
+                const fill = document.getElementById(`fill-${id}`);
+                const min = parseFloat(wrap.getAttribute('data-min'));
+                const max = parseFloat(wrap.getAttribute('data-max'));
+                const percent = ((val - min) / (max - min)) * 100;
+                if (fill) fill.style.width = percent + "%";
+                wrap.querySelector('.slider-input').value = val;
+                wrap.setAttribute('value', val);
+            }
+        };
 
-                <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
-                    <label style="font-weight: bold; font-size: 14px; cursor: pointer; color: #000;" for="cam-enabled">Enable Smooth Camera</label>
-                    <input type="checkbox" id="cam-enabled" ${settings.enabled ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
-                </div>
+        // Bridge function: Crucial for making sliders actually change camera values
+        window.smoothCamUpdate = function(key, value) {
+            const val = parseFloat(value);
+            settings[key] = val;
 
-                <div style="margin-bottom: 15px; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 5px;">
-                    <label style="display:flex; justify-content:space-between; font-weight:bold; font-size:13px; margin-bottom: 5px; color: #000;">
-                        Master Smoothness <span id="val-masterSmooth">${settings.masterSmooth}%</span>
-                    </label>
-                    <p style="font-size: 10px; color: #444; margin-top: 0; margin-bottom: 5px;">Higher % = Heavier, more cinematic camera.</p>
-                    <input type="range" id="cam-masterSmooth" min="1" max="100" step="1" value="${settings.masterSmooth}" style="width: 100%;">
-                </div>
+            if (key === 'masterSmooth') {
+                const t = val / 100;
+                settings.rotSmooth = parseFloat((0.25 - (t * 0.24)).toFixed(3));
+                settings.transSmooth = parseFloat((0.15 - (t * 0.14)).toFixed(3));
+                settings.fovSmooth = parseFloat((0.40 - (t * 0.38)).toFixed(3));
+                settings.fastSmooth = parseFloat((0.80 - (t * 0.75)).toFixed(3));
+                settings.dragSmooth = parseFloat((0.25 - (t * 0.23)).toFixed(3));
+                
+                ['rotSmooth', 'transSmooth', 'fovSmooth', 'fastSmooth', 'dragSmooth'].forEach(id => {
+                    updateSliderVisuals(id, settings[id]);
+                });
+            }
+            saveSettings();
+        };
 
-                <details style="margin-bottom: 12px; cursor: pointer;">
-                    <summary style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #000;">Advanced Tweaks</summary>
-                    <div style="padding: 10px; border-left: 2px solid #999; margin-left: 5px;">
-
-                        <div style="margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
-                            <label style="display:flex; justify-content:space-between; font-size:12px; font-weight: bold; color: #000;">
-                                Mouse Sensitivity <span id="val-mouseSens">${settings.mouseSens.toFixed(1)}</span>
-                            </label>
-                            <input type="range" id="cam-mouseSens" min="0.1" max="5.0" step="0.1" value="${settings.mouseSens}" style="width: 100%;">
-                        </div>
-
-                        <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
-                            <label style="font-size: 12px; font-weight: bold; color: #000;">Dynamic Zoom (Follow Mode)</label>
-                            <input type="checkbox" id="cam-dynamicZoom" ${settings.dynamicZoom ? 'checked' : ''} style="width: 14px; height: 14px; cursor: pointer;">
-                        </div>
-
-                        <div style="margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
-                            <label style="display:flex; justify-content:space-between; font-size:12px; color: #000;">
-                                Zoom Strength <span id="val-zoomScale">${settings.zoomScale.toFixed(1)}</span>
-                            </label>
-                            <input type="range" id="cam-zoomScale" min="1.0" max="20.0" step="0.5" value="${settings.zoomScale}" style="width: 100%;">
-                        </div>
-
-                        <p style="font-size: 11px; color: #333; margin-bottom: 12px; line-height: 1.3;">
-                            <i><b>Note:</b> Lower values mean smoother motion. Adjusting these overrides the Master slider.</i>
-                        </p>
-
-                        ${['rotSmooth', 'transSmooth', 'fovSmooth', 'fastSmooth', 'dragSmooth'].map(id => `
-                            <div style="margin-bottom: 12px;">
-                                <label style="display:flex; justify-content:space-between; font-size:12px; color: #000;">
-                                    ${id.replace('Smooth', '')} Smoothing <span id="val-${id}">${settings[id].toFixed(3)}</span>
-                                </label>
-                                <input type="range" id="cam-${id}" min="0.01" max="${id === 'fastSmooth' ? '1.00' : '0.50'}" step="0.01" value="${settings[id]}" style="width: 100%;">
+        function createSliderHTML(id, label, min, max, precision, value) {
+            const percent = ((value - min) / (max - min)) * 100;
+            return `
+                <div class="slider" data-type="slider" id="wrapper-${id}" 
+                     data-update="{window.smoothCamUpdate('${id}', value)}" 
+                     value="${value}" data-min="${min}" data-max="${max}" 
+                     data-precision="${precision}" tabindex="0">
+                    <div class="slider-rail">
+                        <div class="slider-selection" id="fill-${id}" style="width: ${percent}%;">
+                            <div class="slider-grippy">
+                                <input class="slider-input" value="${value}" readonly>
                             </div>
-                        `).join('')}
+                        </div>
                     </div>
-                </details>
+                    <label>${label}</label>
+                </div>`;
+        }
 
-                <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="cam-reset" style="width:100%; margin-top:5px;">
-                    Reset to Cinematic Defaults
-                </button>
-            </div>
+        const wrapper = document.createElement('div');
+        wrapper.id = 'geofs-smooth-cam-settings';
+        
+        wrapper.innerHTML = `
+            <fieldset style="border-top: 1px solid #ccc; margin-top: 10px;">
+                <legend class="geofs-hideForMobile">Cinematic Camera - Smoothness Master</legend>
+                <legend class="geofs-onlyForMobile">Smooth Camera Master</legend>
+                
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect is-upgraded ${settings.enabled ? 'is-checked' : ''}" for="cam-enabled" style="margin-bottom: 10px;">
+                    <input type="checkbox" id="cam-enabled" class="mdl-switch__input" ${settings.enabled ? 'checked' : ''}>
+                    <span class="mdl-switch__label">Enable Smooth Camera</span>
+                    <div class="mdl-switch__track"></div>
+                    <div class="mdl-switch__thumb"><span class="mdl-switch__focus-helper"></span></div>
+                </label>
+
+                ${createSliderHTML('masterSmooth', 'Master Smoothness (%)', 1, 100, 0, settings.masterSmooth)}
+            </fieldset>
+
+            <fieldset class="geofs-advancedGraphics geofs-advanced geofs-expanded">
+                <span class="geofs-advancedToggle">Advanced Tweaks</span>
+                <div class="geofs-stopMousePropagation">
+                    ${createSliderHTML('mouseSens', 'Mouse Sensitivity', 0.1, 5.0, 1, settings.mouseSens)}
+                    
+                    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect is-upgraded ${settings.dynamicZoom ? 'is-checked' : ''}" for="cam-dynamicZoom">
+                        <input type="checkbox" id="cam-dynamicZoom" class="mdl-switch__input" ${settings.dynamicZoom ? 'checked' : ''}>
+                        <span class="mdl-switch__label">Dynamic Zoom (Follow)</span>
+                        <div class="mdl-switch__track"></div>
+                        <div class="mdl-switch__thumb"><span class="mdl-switch__focus-helper"></span></div>
+                    </label>
+
+                    ${createSliderHTML('zoomScale', 'Zoom Strength', 1.0, 20.0, 1, settings.zoomScale)}
+                    
+                    <p style="font-size: 10px; opacity: 0.6; margin: 10px 0;">Individual Smooth Constants</p>
+                    ${['rotSmooth', 'transSmooth', 'fovSmooth', 'fastSmooth', 'dragSmooth'].map(id => 
+                        createSliderHTML(id, id.replace('Smooth', ''), 0.01, (id === 'fastSmooth' ? 1.0 : 0.5), 3, settings[id])
+                    ).join('')}
+
+                    <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="cam-reset" style="width:100%; margin-top:10px;">
+                        Reset Defaults
+                    </button>
+                </div>
+            </fieldset>
         `;
 
-        container.appendChild(fieldset);
+        container.appendChild(wrapper);
 
-        const updateAdvancedUI = () => {
-            ['rotSmooth', 'transSmooth', 'fovSmooth', 'fastSmooth', 'dragSmooth', 'mouseSens', 'zoomScale'].forEach(id => {
-                const el = document.getElementById(`cam-${id}`);
-                const valEl = document.getElementById(`val-${id}`);
-                if (el && valEl) {
-                    el.value = settings[id];
-                    valEl.innerText = (id === 'mouseSens' || id === 'zoomScale') ? settings[id].toFixed(1) : settings[id].toFixed(3);
-                }
+        // UI EVENT HOOKS
+        $(wrapper).find('.slider').each(function() {
+            const id = this.id.replace('wrapper-', '');
+            $(this).on('change', (e, value) => {
+                window.smoothCamUpdate(id, value);
             });
-            document.getElementById('cam-dynamicZoom').checked = settings.dynamicZoom;
-        };
-
-        document.getElementById('cam-enabled').addEventListener('change', (e) => { settings.enabled = e.target.checked; saveSettings(); });
-        document.getElementById('cam-dynamicZoom').addEventListener('change', (e) => { settings.dynamicZoom = e.target.checked; saveSettings(); });
-
-        document.getElementById('cam-masterSmooth').addEventListener('input', (e) => {
-            const val = parseInt(e.target.value, 10);
-            settings.masterSmooth = val;
-            document.getElementById('val-masterSmooth').innerText = `${val}%`;
-
-            const t = val / 100;
-            settings.rotSmooth = parseFloat((0.25 - (t * 0.24)).toFixed(3));
-            settings.transSmooth = parseFloat((0.15 - (t * 0.14)).toFixed(3));
-            settings.fovSmooth = parseFloat((0.40 - (t * 0.38)).toFixed(3));
-            settings.fastSmooth = parseFloat((0.80 - (t * 0.75)).toFixed(3));
-            settings.dragSmooth = parseFloat((0.25 - (t * 0.23)).toFixed(3));
-
-            updateAdvancedUI();
-            saveSettings();
         });
 
-        const bindSlider = (id) => {
-            const slider = document.getElementById(`cam-${id}`);
-            const valDisplay = document.getElementById(`val-${id}`);
-            slider.addEventListener('input', (e) => {
-                const val = parseFloat(e.target.value);
-                settings[id] = val;
-                valDisplay.innerText = (id === 'mouseSens' || id === 'zoomScale') ? val.toFixed(1) : val.toFixed(3);
-                if (!['mouseSens', 'zoomScale'].includes(id)) document.getElementById('val-masterSmooth').innerText = "Custom";
-                saveSettings();
+        const toggleEnabled = (id, key) => {
+            const el = document.getElementById(id);
+            el.addEventListener('change', (e) => { 
+                settings[key] = e.target.checked; 
+                e.target.parentElement.classList.toggle('is-checked', settings[key]);
+                saveSettings(); 
             });
         };
 
-        ['rotSmooth', 'transSmooth', 'fovSmooth', 'fastSmooth', 'dragSmooth', 'mouseSens', 'zoomScale'].forEach(id => bindSlider(id));
+        toggleEnabled('cam-enabled', 'enabled');
+        toggleEnabled('cam-dynamicZoom', 'dynamicZoom');
 
-        document.getElementById('cam-reset').addEventListener('click', () => {
-            settings = { ...defaultSettings };
-            saveSettings();
-            document.getElementById('cam-enabled').checked = settings.enabled;
-            document.getElementById('cam-masterSmooth').value = settings.masterSmooth;
-            document.getElementById('val-masterSmooth').innerText = `${settings.masterSmooth}%`;
-            updateAdvancedUI();
+        // FIXED RESET BUTTON: No reload, just sync
+        document.getElementById('cam-reset').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (confirm("Reset cinematic camera to defaults?")) {
+                // 1. Reset Settings Object
+                settings = Object.assign({}, defaultSettings);
+                saveSettings();
+
+                // 2. Sync Checkboxes
+                const enBox = document.getElementById('cam-enabled');
+                enBox.checked = settings.enabled;
+                enBox.parentElement.classList.toggle('is-checked', settings.enabled);
+
+                const dynBox = document.getElementById('cam-dynamicZoom');
+                dynBox.checked = settings.dynamicZoom;
+                dynBox.parentElement.classList.toggle('is-checked', settings.dynamicZoom);
+
+                // 3. Sync all Sliders
+                const allSliderKeys = ['masterSmooth', 'mouseSens', 'zoomScale', 'rotSmooth', 'transSmooth', 'fovSmooth', 'fastSmooth', 'dragSmooth'];
+                allSliderKeys.forEach(key => updateSliderVisuals(key, settings[key]));
+            }
         });
     }
 
