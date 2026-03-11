@@ -25,7 +25,7 @@ See it in action in [this video](https://www.youtube.com/watch?v=3GqDLJbesvQ).
 
 1.  Install the  [Tampermonkey extension](https://www.tampermonkey.net/)  for your browser.
     
-2.  Create a new script and paste the contents of  `Smooth Camera tampermonkey NEW.js`.
+2.  Create a new script and paste the contents of  `Smooth Camera.js`.
     
 3.  Save the script and refresh GeoFS.
     
@@ -34,9 +34,18 @@ See it in action in [this video](https://www.youtube.com/watch?v=3GqDLJbesvQ).
 
 1.  Create a new bookmark in your browser.
     
-2.  In the  **URL**  or  **Location**  field, paste the entire code from  `Smooth Camera bookmarklet NEW.js`.
+2.  In the  **URL**  or  **Location**  field, paste the entire code from  `Smooth Camera bookmarklet.js`.
     
 3.  Click the bookmark once while you are in the GeoFS game to load the settings.
+
+
+### Option 3: Console
+
+1.  Start GeoFS and launch your browser developer tools (F12 in Chrome)
+    
+2.  Copy and paste the contents of  `Smooth Camera.js` into thr Console.
+    
+3.  Press Enter.
     
 
 ----------
