@@ -21,7 +21,15 @@ See it in action in [this video](https://www.youtube.com/watch?v=3GqDLJbesvQ).
 
 ## Installation
 
-### Option 1: Tampermonkey (Recommended)
+### Option 1: Console
+
+1. Copy the code from `Smooth Camera.js`.
+   
+2. Open the javascript console in your browser. (F12 in chrome or ⌥⌘C in Safari)
+   
+3. Paste the code in the console and press Enter.
+
+### Option 2: Tampermonkey
 
 1.  Install the  [Tampermonkey extension](https://www.tampermonkey.net/)  for your browser.
     
@@ -30,23 +38,23 @@ See it in action in [this video](https://www.youtube.com/watch?v=3GqDLJbesvQ).
 3.  Save the script and refresh GeoFS.
     
 
-### Option 2: Bookmarklet
+### Option 3: Bookmarklet
 
 1.  Create a new bookmark in your browser.
     
-2.  In the  **URL**  or  **Location**  field, paste the entire code from  `Smooth Camera bookmarklet.js`.
+2.  In the  **URL**  or  **Location**  field, paste the following:
+```javascript
+    javascript:(() => {
+    var liveryScript = document.createElement('script');
+    liveryScript.src = "https://raw.githack.com/cesjn/GeoFS-Smooth-Cam/main/Smooth%20Camera.js";
+    document.body.appendChild(liveryScript);
+    liveryScript.onload = () => { console.log('Livery Selector loaded!'); };
+    })();
+```
     
-3.  Click the bookmark once while you are in the GeoFS game to load the settings.
+4.  Save the bookmark and launch GeoFS.
+5.  Click the bookmark once while you are in the GeoFS game to load the settings.
 
-
-### Option 3: Console
-
-1.  Start GeoFS and launch your browser developer tools (F12 in Chrome)
-    
-2.  Copy and paste the contents of  `Smooth Camera.js` into thr Console.
-    
-3.  Press Enter.
-    
 
 ----------
 
@@ -63,7 +71,7 @@ Once installed, open the  **GeoFS Preferences**  menu and navigate to the  **Gra
 
 >*TIP!*
 >
-> **Lower values**  in the manual "Advanced Tweaks" sliders result in  **smoother**  motion, while  **higher values**make the camera more responsive.
+> **Lower values**  in the manual "Advanced Tweaks" sliders result in  **smoother**  motion, while  **higher values** make the camera more responsive.
 
 <img width="1512" height="945" alt="image" src="https://github.com/user-attachments/assets/9a8e4082-050a-451b-b5f9-a348954ee09e" />
 
